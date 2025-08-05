@@ -95,7 +95,18 @@ def generate_frames():
             is_frontal_view = shoulder_x_diff > VIEW_THRESHOLD
 
             # Shoulder Flexion/Abduction (Conditional based on view)
-            if is_frontal_view:
+            if not is_frontal_view: # If not frontal, it's sagittal
+                # Display Flexion/Extension in sagittal view
+                if "right_shoulder_flexion" in active_joints and are_landmarks_visible(landmarks.landmark, [23, 11, 13]): # Anatomical RIGHT landmarks
+                    current_angles["right_shoulder_flexion"] = calculate_right_shoulder_flexion_angle(landmarks.landmark) # Assign to internal 'left' for display as 'Right'
+                else:
+                    current_angles["right_shoulder_flexion"] = None
+
+                if "left_shoulder_flexion" in active_joints and are_landmarks_visible(landmarks.landmark, [24, 12, 14]): # Anatomical LEFT landmarks
+                    current_angles["left_shoulder_flexion"] = calculate_left_shoulder_flexion_angle(landmarks.landmark) # Assign to internal 'right' for display as 'Left'
+                else:
+                    current_angles["left_shoulder_flexion"] = None
+            else: # If frontal
                 # Display Abduction/Adduction in frontal view
                 if "left_shoulder_abduction" in active_joints and are_landmarks_visible(landmarks.landmark, [8, 12, 14]): # Ear, Shoulder, Elbow
                     current_angles["left_shoulder_abduction"] = calculate_left_shoulder_abduction_angle(landmarks.landmark)
@@ -106,21 +117,9 @@ def generate_frames():
                     current_angles["right_shoulder_abduction"] = calculate_right_shoulder_abduction_angle(landmarks.landmark)
                 else:
                     current_angles["right_shoulder_abduction"] = None
-            else:
-                # Display Flexion/Extension in sagittal view
-                if "left_shoulder_flexion" in active_joints and are_landmarks_visible(landmarks.landmark, [24, 12, 14]): # Hip, Shoulder, Elbow
-                    current_angles["left_shoulder_flexion"] = calculate_left_shoulder_flexion_angle(landmarks.landmark)
-                else:
-                    current_angles["left_shoulder_flexion"] = None
-
-                if "right_shoulder_flexion" in active_joints and are_landmarks_visible(landmarks.landmark, [23, 11, 13]): # Hip, Shoulder, Elbow
-                    current_angles["right_shoulder_flexion"] = calculate_right_shoulder_flexion_angle(landmarks.landmark)
-                else:
-                    current_angles["right_shoulder_flexion"] = None
 
             # Elbow (Left)
-            # Only calculate if in frontal view (shoulder and elbow x-coordinates are NOT close)
-            if "left_elbow" in active_joints and are_landmarks_visible(landmarks.landmark, [12, 14, 16]) and abs(landmarks.landmark[12].x - landmarks.landmark[14].x) > VIEW_THRESHOLD:
+            if "left_elbow" in active_joints and are_landmarks_visible(landmarks.landmark, [12, 14, 16]):
                 current_angles["left_elbow"] = calculate_left_elbow_angle(landmarks.landmark)
                 if current_angles["left_elbow"] > 155:
                     current_angles["left_elbow"] = None
@@ -128,49 +127,48 @@ def generate_frames():
                 current_angles["left_elbow"] = None
 
             # Elbow (Right)
-            # Only calculate if in frontal view (shoulder and elbow x-coordinates are NOT close)
-            if "right_elbow" in active_joints and are_landmarks_visible(landmarks.landmark, [11, 13, 15]) and abs(landmarks.landmark[11].x - landmarks.landmark[13].x) > VIEW_THRESHOLD:
+            if "right_elbow" in active_joints and are_landmarks_visible(landmarks.landmark, [11, 13, 15]):
                 current_angles["right_elbow"] = calculate_right_elbow_angle(landmarks.landmark)
                 if current_angles["right_elbow"] > 155:
                     current_angles["right_elbow"] = None
             else:
                 current_angles["right_elbow"] = None
 
-            # Hip (Left)
+            # Hip (Left) - Anatomical Left (appears on right of mirrored screen)
             if "left_hip" in active_joints and are_landmarks_visible(landmarks.landmark, [12, 24, 26]): # Shoulder, Hip, Knee
-                current_angles["left_hip"] = calculate_left_hip_angle(landmarks.landmark)
-            else:
-                current_angles["left_hip"] = None
-
-            # Hip (Right)
-            if "right_hip" in active_joints and are_landmarks_visible(landmarks.landmark, [11, 23, 25]): # Shoulder, Hip, Knee
-                current_angles["right_hip"] = calculate_right_hip_angle(landmarks.landmark)
+                current_angles["right_hip"] = calculate_left_hip_angle(landmarks.landmark) # Assign to 'right_hip' for display as 'Left Hip'
             else:
                 current_angles["right_hip"] = None
 
-            # Knee (Left)
-            if "left_knee" in active_joints and are_landmarks_visible(landmarks.landmark, [24, 26, 28]): # Hip, Knee, Ankle
-                current_angles["left_knee"] = calculate_left_knee_angle(landmarks.landmark)
+            # Hip (Right) - Anatomical Right (appears on left of mirrored screen)
+            if "right_hip" in active_joints and are_landmarks_visible(landmarks.landmark, [11, 23, 25]): # Shoulder, Hip, Knee
+                current_angles["left_hip"] = calculate_right_hip_angle(landmarks.landmark) # Assign to 'left_hip' for display as 'Right Hip'
             else:
-                current_angles["left_knee"] = None
+                current_angles["left_hip"] = None
 
-            # Knee (Right)
-            if "right_knee" in active_joints and are_landmarks_visible(landmarks.landmark, [23, 25, 27]): # Hip, Knee, Ankle
-                current_angles["right_knee"] = calculate_right_knee_angle(landmarks.landmark)
+            # Knee (Left) - Anatomical Left (appears on right of mirrored screen)
+            if "left_knee" in active_joints and are_landmarks_visible(landmarks.landmark, [24, 26, 28]): # Hip, Knee, Ankle
+                current_angles["right_knee"] = calculate_left_knee_angle(landmarks.landmark) # Assign to 'right_knee' for display as 'Left Knee'
             else:
                 current_angles["right_knee"] = None
 
-            # Ankle (Left)
-            if "left_ankle" in active_joints and are_landmarks_visible(landmarks.landmark, [26, 28, 30]): # Knee, Ankle, Heel
-                current_angles["left_ankle"] = calculate_left_ankle_angle(landmarks.landmark)
+            # Knee (Right) - Anatomical Right (appears on left of mirrored screen)
+            if "right_knee" in active_joints and are_landmarks_visible(landmarks.landmark, [23, 25, 27]): # Hip, Knee, Ankle
+                current_angles["left_knee"] = calculate_right_knee_angle(landmarks.landmark) # Assign to 'left_knee' for display as 'Right Knee'
             else:
-                current_angles["left_ankle"] = None
+                current_angles["left_knee"] = None
 
-            # Ankle (Right)
-            if "right_ankle" in active_joints and are_landmarks_visible(landmarks.landmark, [25, 27, 29]): # Knee, Ankle, Heel
-                current_angles["right_ankle"] = calculate_right_ankle_angle(landmarks.landmark)
+            # Ankle (Left) - Anatomical Left (appears on right of mirrored screen)
+            if "left_ankle" in active_joints and are_landmarks_visible(landmarks.landmark, [26, 28, 30]): # Knee, Ankle, Heel
+                current_angles["right_ankle"] = calculate_left_ankle_angle(landmarks.landmark) # Assign to 'right_ankle' for display as 'Left Ankle'
             else:
                 current_angles["right_ankle"] = None
+
+            # Ankle (Right) - Anatomical Right (appears on left of mirrored screen)
+            if "right_ankle" in active_joints and are_landmarks_visible(landmarks.landmark, [25, 27, 29]): # Knee, Ankle, Heel
+                current_angles["left_ankle"] = calculate_right_ankle_angle(landmarks.landmark) # Assign to 'left_ankle' for display as 'Right Ankle'
+            else:
+                current_angles["left_ankle"] = None
 
             # Update max angles
             for joint, angle in current_angles.items():
